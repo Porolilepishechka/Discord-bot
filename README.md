@@ -13,8 +13,8 @@
 ## Встановлення
 1. Клонуйте репозиторій:
  ```sh
- git clone https://github.com/your-repo.git
- cd your-repo
+ git clone https://github.com/Porolilepishechka/Discord-bot.git
+ cd Discord-bot
  ```
 
 ## Встановіть залежності:

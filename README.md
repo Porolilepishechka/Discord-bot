@@ -19,6 +19,7 @@
 
 ## Встановіть залежності:
   npm install
+
   npm install discord.js dotenv
 
 ## Запустіть бота:

@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits } = require('discord.js');
+const { Client, GatewayIntentBits, MessageFlags } = require('discord.js');
 
 const client = new Client({
     intents: [
@@ -15,12 +15,12 @@ client.once('ready', () => {
     console.log(`✅ Бот запущено як ${client.user.tag}`);
 });
 
-client.on('messageCreate', message => {
+client.on('messageCreate', async message => {
     if (message.author.bot) return;
 
     if (forbiddenWords.some(word => message.content.toLowerCase().replace(/\s/g, '').trim().includes(word))) {
-        message.delete().catch(console.error);
-        message.channel.send(`${message.author}, твій меседж містить заборонене слово! 🚫`);
+        message.delete();
+        await message.author.send(`${message.author}, твій меседж містить заборонене слово! 🚫`);
         return;
     }
 

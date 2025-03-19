@@ -1,5 +1,17 @@
 require('dotenv').config();
+const fs = require('fs');
 const { Client, GatewayIntentBits, MessageFlags } = require('discord.js');
+
+let forbiddenWords = [];
+
+try {
+    const data = fs.readFileSync('forbidden.txt', 'utf-8');
+    forbiddenWords = data.split(',').map(word => word.trim().replace(/\s/g, '').toLowerCase());
+    console.log(forbiddenWords);
+    console.log('слова зчитано');
+} catch (error) {
+    console.log('ти даун:', error);
+}
 
 const client = new Client({
     intents: [
@@ -8,8 +20,6 @@ const client = new Client({
         GatewayIntentBits.MessageContent
     ]
 });
-
-const forbiddenWords = ['хуй', 'пизда'];
 
 client.once('ready', () => {
     console.log(`✅ Бот запущено як ${client.user.tag}`);
@@ -20,7 +30,7 @@ client.on('messageCreate', async message => {
 
     if (forbiddenWords.some(word => message.content.toLowerCase().replace(/\s/g, '').trim().includes(word))) {
         message.delete();
-        await message.author.send(`${message.author}, твій меседж містить заборонене слово! 🚫`);
+        await message.author.send(`${message.author}, твій меседж містить заборонене слово!\nmessage: **${message.content}**\nБудь уважним наступного разу.`);
         return;
     }
 

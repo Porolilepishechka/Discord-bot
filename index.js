@@ -15,6 +15,16 @@ try {
     console.log('ти даун:', error);
 }
 
+async function WriteToFile(content) {
+    fs.appendFile('log.txt', content, err => {
+        if (err) {
+            console.error(err);
+        } else {
+            console.log("text has been writed")
+        }
+    });
+}
+
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -43,6 +53,10 @@ client.on('messageCreate', async message => {
         
         await message.delete();
         console.log(`Виявлено заборонене слово: ${originalWord}`);
+        if (message.author.tag.length != 0) {
+            const content = `user {${message.author.tag}}\n`
+            WriteToFile(content);
+        }
 
         try {
             await message.author.send(
@@ -53,12 +67,13 @@ client.on('messageCreate', async message => {
         }
 
         const muteRole = message.guild.roles.cache.find(role => role.name.toLowerCase() === 'muted');
+        const AdminRole = message.guild.roles.cache.find(role => role.name.toLowerCase() === '★bot assistant★');
         if (muteRole) {
             try {
                 await message.member.roles.add(muteRole);
                 if (logChannel) {
                     logChannel.send(
-                        `🔇 Користувач **${message.author.tag}** був зам'ючений за використання забороненого слова: **${originalWord}**\nПовідомлення: "${message.content}"\nЧас: <t:${Math.floor(Date.now() / 1000)}:F>`
+                        `${AdminRole}\n🔇 Користувач **${message.author.tag}** був зам'ючений за використання забороненого слова: **${originalWord}**\nПовідомлення: "${message.content}"\nЧас: <t:${Math.floor(Date.now() / 1000)}:F>`
                     );
                 } else {
                     console.log('Канал logs не знайдено.');
@@ -70,12 +85,8 @@ client.on('messageCreate', async message => {
         } else {
             console.log('Роль Muted не знайдена на сервері.');
         }
-        
-        return;
-    }
 
-    if (message.content.toLowerCase() === 'привіт') {
-        message.reply('Привіт! 👋');
+        return;
     }
 });
 

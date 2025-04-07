@@ -4,15 +4,16 @@ const { Client, GatewayIntentBits } = require('discord.js');
 
 let forbiddenWords = [];
 let orgForbiddenWords = [];
+const path = require('path');
 
 try {
-    const data = fs.readFileSync('forbidden.txt', 'utf-8');
+    const data = fs.readFileSync(path.join(__dirname, 'forbidden.txt'), 'utf-8');
     forbiddenWords = data.split(',').map(word => word.trim().replace(/\s/g, '').toLowerCase());
     orgForbiddenWords = data.split(',').map(word => word.trim());
     console.log(orgForbiddenWords);
     console.log('слова зчитано');
 } catch (error) {
-    console.log('ти даун:', error);
+    console.log('Файл forbidden.txt не знайдено. Список заборонених слів буде порожній.', error);
 }
 
 async function WriteToFile(content) {

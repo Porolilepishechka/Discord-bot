@@ -4,16 +4,29 @@ const { Client, GatewayIntentBits } = require('discord.js');
 
 let forbiddenWords = [];
 let orgForbiddenWords = [];
+
+let warnWords = [];
+let orgwarnWords = [];
 const path = require('path');
 
 try {
-    const data = fs.readFileSync(path.join(__dirname, 'forbidden.txt'), 'utf-8');
-    forbiddenWords = data.split(',').map(word => word.trim().replace(/\s/g, '').toLowerCase());
-    orgForbiddenWords = data.split(',').map(word => word.trim());
-    console.log(orgForbiddenWords);
+    const dataFB = fs.readFileSync(path.join(__dirname, 'forbidden.txt'), 'utf-8');
+    forbiddenWords = dataFB.split(',').map(word => word.trim().replace(/\s/g, '').toLowerCase());
+    orgForbiddenWords = dataFB.split(',').map(word => word.trim());
+    console.log("dataFB: " ,orgForbiddenWords);
     console.log('слова зчитано');
 } catch (error) {
     console.log('Файл forbidden.txt не знайдено. Список заборонених слів буде порожній.', error);
+}
+
+try {
+    const dataWW = fs.readFileSync(path.join(__dirname, 'warnWords.txt'), 'utf-8');
+    warnWords = dataWW.split(',').map(word => word.trim().replace(/\s/g, '').toLowerCase());
+    orgwarnWords = dataWW.split(',').map(word => word.trim());
+    console.log("dataWW: " ,orgwarnWords);
+    console.log('слова зчитано');
+} catch (error) {
+    console.log('Файл warnWords.txt не знайдено. Список заборонених слів буде порожній.', error);
 }
 
 async function WriteToFile(content) {
@@ -43,14 +56,43 @@ client.on('messageCreate', async message => {
 
     const messageContent = message.content.toLowerCase().replace(/\s/g, '').trim();
 
-    const triggeredWord = forbiddenWords.find(word => messageContent.includes(word));
+    const triggeredForbiddenWords = forbiddenWords.find(word => messageContent.includes(word));
+    const triggeredWarnWords = warnWords.find(word => messageContent.includes(word));
 
     const logChannel = message.guild.channels.cache.find(channel => 
         channel.name.toLowerCase() === 'karatel-logs' && channel.isTextBased()
     );
 
-    if (triggeredWord) {
-        const originalWord = orgForbiddenWords.find(w => w.toLowerCase().replace(/\s/g, '') === triggeredWord);
+    if (triggeredWarnWords) {
+        const originalWord = orgwarnWords.find(w => w.toLowerCase().replace(/\s/g, '') === triggeredWarnWords);
+        const AdminRole = message.guild.roles.cache.find(role => role.name.toLowerCase() === '★bot assistant★');
+
+        await message.delete();
+        console.log(`Виявлено заборонене слово: ${originalWord}`);
+        if (message.author.tag.length != 0) {
+            const content = `user {${message.author.tag}}\n`
+            WriteToFile(content);
+        }
+
+        try {
+            await message.author.send(
+                `🚫 Твій меседж містив заборонене слово: **${originalWord}**\nПовідомлення: "${message.content}"\nБудь уважним наступного разу.`
+            );
+        } catch (err) {
+            console.log('Не вдалось відправити DM:', err);
+        }
+
+        if (logChannel) {
+            logChannel.send(
+                `${AdminRole}\n Користувачу **${message.author.tag}** був виданний варн за використання забороненого слова: **${originalWord}**\nПовідомлення: "${message.content}"\nЧас: <t:${Math.floor(Date.now() / 1000)}:F>`
+            );
+        } else {
+            console.log('Канал logs не знайдено.');
+        }
+    }
+
+    if (triggeredForbiddenWords) {
+        const originalWord = orgForbiddenWords.find(w => w.toLowerCase().replace(/\s/g, '') === triggeredForbiddenWords);
         
         await message.delete();
         console.log(`Виявлено заборонене слово: ${originalWord}`);

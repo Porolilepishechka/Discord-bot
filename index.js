@@ -54,10 +54,18 @@ client.once('ready', () => {
 client.on('messageCreate', async message => {
     if (message.author.bot) return;
 
-    const messageContent = message.content.toLowerCase().replace(/\s/g, '').trim();
+    const cleanMessage = message.content
+        .toLowerCase()
+        .replace(/[.,!?;:()"'«»\-]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
 
-    const triggeredForbiddenWords = forbiddenWords.find(word => messageContent.includes(word));
-    const triggeredWarnWords = warnWords.find(word => messageContent.includes(word));
+    const wordsInMessage = cleanMessage.split(' ');
+
+    if (!wordsInMessage) return;
+
+    const triggeredForbiddenWords = forbiddenWords.find(word => wordsInMessage.includes(word));
+    const triggeredWarnWords = warnWords.find(word => wordsInMessage.includes(word));
 
     const logChannel = message.guild.channels.cache.find(channel => 
         channel.name.toLowerCase() === 'karatel-logs' && channel.isTextBased()
@@ -76,7 +84,7 @@ client.on('messageCreate', async message => {
 
         try {
             await message.author.send(
-                `🚫 Твій меседж містив заборонене слово: **${originalWord}**\nПовідомлення: "${message.content}"\nБудь уважним наступного разу.`
+                `🚫 Твій меседж містив заборонене слово: **${originalWord}**\nПовідомлення: "${message.content}"\nЦе тільки варн тому будь уважним наступного разу.`
             );
         } catch (err) {
             console.log('Не вдалось відправити DM:', err);
